@@ -784,11 +784,7 @@ public:
     ((void (*)(id, SEL, id, id))objc_msgSend)(
         m_manager, "addScriptMessageHandler:name:"_sel, delegate,
         "external"_str);
-                
-    ((id (*)(id, SEL, id, id))objc_msgSend)((id) m_webview, "setValue:forKey:"_sel, 
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls, "numberWithBool:"_sel, 0), 
-        "drawsBackground"_str);
-            
+                            
     init(R"script(
                       window.external = {
                         invoke: function(s) {

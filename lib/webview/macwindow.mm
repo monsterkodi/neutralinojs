@@ -9,6 +9,18 @@
 
 @implementation MacWebView
 
+-(id) initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration*)configuration
+{
+    self = [super initWithFrame:frame configuration:configuration];
+    
+    if (self)
+    {
+        [self setValue:[NSNumber numberWithBool:NO] forKey:@"drawsBackground"];
+    }
+    
+    return self;
+}
+
 -(void)mouseDown:(NSEvent *)event 
 {
     NSPoint   viewLoc = [self convertPoint:event.locationInWindow fromView:nil];
@@ -27,8 +39,6 @@
             }
     }];
     
-    [self takeSnapshot];
-    
     [super mouseDown:event];
 }
 
@@ -37,31 +47,10 @@
     WKSnapshotConfiguration * snapshotConfiguration = [[WKSnapshotConfiguration alloc] init];
     [self takeSnapshotWithConfiguration:snapshotConfiguration completionHandler:
         ^(NSImage * image, NSError * error) {
-            [self snapshotTaken:image error:error];
+            if (error) { NSLog(@"%@", error); return; }
+            [((MacWindow*)[self window]) snapshotTaken:image];
     }];
-}
-
--(void)snapshotTaken:(NSImage *)image error:(NSError *)error
-{
-    if (error) NSLog(@"%@", error);
-    else
-    {
-        NSString *filePath = @"~/Desktop/neu.png"; // todo: make path configurable somehow
-        
-        int number = 0;
-        while ([[NSFileManager defaultManager] fileExistsAtPath:[filePath stringByExpandingTildeInPath]])
-        {
-            number++;
-            filePath = [NSString stringWithFormat:@"~/Desktop/neu_%d.png", number];
-        }
-        
-        NSData *imageData = [image TIFFRepresentation];
-        NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-        //NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
-        //imageData = [imageRep representationUsingType:NSBitmapImageFileTypeJPEG properties:imageProps];
-        imageData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:[NSDictionary dictionary]];
-        [imageData writeToFile:[filePath stringByExpandingTildeInPath] atomically:NO];        
-    }
+    [snapshotConfiguration release];
 }
 
 @end
@@ -104,7 +93,7 @@
             self.titleVisibility = NSWindowTitleHidden;
             self.titlebarAppearsTransparent = YES;
             
-            self.movableByWindowBackground = YES; // not sure if this is still needed or doing anything anymore
+            // self.movableByWindowBackground = YES; // not sure if this is still needed or doing anything anymore
         }
         
         if (hideButtons)
@@ -123,9 +112,9 @@
         maxWidth:(int)maxWidth maxHeight:(int)maxHeight 
         resizable:(BOOL)resizable
 {
-    [self setStyleMask:(resizable ? 
-        [self styleMask] |  NSWindowStyleMaskResizable : 
-        [self styleMask] & ~NSWindowStyleMaskResizable)];
+    //[self setStyleMask:(resizable ? 
+    //    [self styleMask] |  NSWindowStyleMaskResizable : 
+    //    [self styleMask] & ~NSWindowStyleMaskResizable)];
 
     if (minWidth != -1 || minHeight != -1) {
         [self setContentMinSize:CGSizeMake(minWidth, minHeight)];
@@ -139,9 +128,31 @@
     }
 }
 
-- (BOOL)isMovableByWindowBackground // not sure if this is still needed or doing anything anymore
+-(void)takeSnapshot
 {
-    return YES;
+    // [m_webview takeSnapshot];
+}
+
+-(void)snapshotTaken:(NSImage *)image
+{
+    NSString *filePath = @"~/Desktop/neu.png"; // todo: make path configurable somehow
+    
+    int number = 0;
+    while ([[NSFileManager defaultManager] fileExistsAtPath:[filePath stringByExpandingTildeInPath]])
+    {
+        number++;
+        filePath = [NSString stringWithFormat:@"~/Desktop/neu_%d.png", number];
+    }
+    
+    NSData *imageData = [image TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    imageData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:[NSDictionary dictionary]];
+    [imageData writeToFile:[filePath stringByExpandingTildeInPath] atomically:NO];        
+}
+
+- (BOOL)isMovableByWindowBackground 
+{
+    return YES; // not sure if this is still needed or doing anything anymore
 }
 
 - (BOOL)canBecomeKeyWindow

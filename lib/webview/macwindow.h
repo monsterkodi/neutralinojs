@@ -19,4 +19,6 @@
         maxWidth:(int)maxWidth maxHeight:(int)maxHeight 
         resizable:(BOOL)resizable;
 
+-(void)snapshotTaken:(NSImage *)image;
+
 @end

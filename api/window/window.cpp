@@ -495,11 +495,12 @@ void setBorderless() {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_set_decorated(GTK_WINDOW(windowHandle), false);
     #elif defined(__APPLE__)
-    unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
-        (id) windowHandle, "styleMask"_sel);
-    windowStyleMask &= ~1; // NSWindowStyleMaskTitled
-    ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
-            "setStyleMask:"_sel, windowStyleMask);
+    // borderless means transparent title on mac for now
+    // unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        // (id) windowHandle, "styleMask"_sel);
+    // windowStyleMask &= ~1; // NSWindowStyleMaskTitled
+    // ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
+            // "setStyleMask:"_sel, windowStyleMask);
     #elif defined(_WIN32)
     DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
     currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
