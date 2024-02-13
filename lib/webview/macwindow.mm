@@ -27,7 +27,7 @@
             }
     }];
     
-    // [self takeSnapshot];
+    [self takeSnapshot];
     
     [super mouseDown:event];
 }
@@ -46,19 +46,20 @@
     if (error) NSLog(@"%@", error);
     else
     {
-        NSString *filePath = @"~/Desktop/neu.jpg"; // todo: make path configurable somehow
+        NSString *filePath = @"~/Desktop/neu.png"; // todo: make path configurable somehow
         
         int number = 0;
         while ([[NSFileManager defaultManager] fileExistsAtPath:[filePath stringByExpandingTildeInPath]])
         {
             number++;
-            filePath = [NSString stringWithFormat:@"~/Desktop/neu_%d.jpg", number];
+            filePath = [NSString stringWithFormat:@"~/Desktop/neu_%d.png", number];
         }
         
         NSData *imageData = [image TIFFRepresentation];
         NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-        NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
-        imageData = [imageRep representationUsingType:NSJPEGFileType properties:imageProps];
+        //NSDictionary *imageProps = [NSDictionary dictionaryWithObject:[NSNumber numberWithFloat:1.0] forKey:NSImageCompressionFactor];
+        //imageData = [imageRep representationUsingType:NSBitmapImageFileTypeJPEG properties:imageProps];
+        imageData = [imageRep representationUsingType:NSBitmapImageFileTypePNG properties:[NSDictionary dictionary]];
         [imageData writeToFile:[filePath stringByExpandingTildeInPath] atomically:NO];        
     }
 }
