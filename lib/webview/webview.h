@@ -701,10 +701,15 @@ public:
     ((void (*)(id, SEL, id))objc_msgSend)(app, sel_registerName("setDelegate:"),
                                           delegate);
 
+    // Webview
+    m_webview = ((id(*)(id, SEL))objc_msgSend)("MacWebView"_cls, "alloc"_sel);
+    ((void (*)(id, SEL, int))objc_msgSend)(m_webview, "initWithInspectorAllowed:"_sel, windowOptions.enableInspector);
+                                          
     // Main window
     m_window = ((id(*)(id, SEL))objc_msgSend)("MacWindow"_cls, "alloc"_sel);
-    m_window = ((id(*)(id, SEL, int, int, int))objc_msgSend)(m_window, 
-        "initWithHiddenTitlebar:hiddenButtons:resizable:"_sel, 
+    m_window = ((id(*)(id, SEL, id, int, int, int))objc_msgSend)(m_window, 
+        "initWithWebView:hiddenTitlebar:hiddenButtons:resizable:"_sel, 
+            m_webview,
             windowOptions.borderless, // assume borderless means hiddenTitlebar and ...
             windowOptions.borderless, //    ... borderless means hiddenButtons for now.
             windowOptions.sizeOptions.resizable);
@@ -733,54 +738,10 @@ public:
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
     objc_setAssociatedObject(delegate, "webview", (id)this, OBJC_ASSOCIATION_ASSIGN);
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, sel_registerName("setDelegate:"), wdelegate);
-
-    // Webview
-    auto config = ((id(*)(id, SEL))objc_msgSend)("WKWebViewConfiguration"_cls, "new"_sel);
-    m_manager   = ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
-    m_webview   = ((id(*)(id, SEL))objc_msgSend)("MacWebView"_cls, "alloc"_sel);
     
-    if (windowOptions.enableInspector) {
-      // Equivalent Obj-C:
-      // [[config preferences] setValue:@YES forKey:@"developerExtrasEnabled"];
-      ((id(*)(id, SEL, id, id))objc_msgSend)(
-          ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-          "setValue:forKey:"_sel,
-          ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                               "numberWithBool:"_sel, 1),
-          "developerExtrasEnabled"_str);
-    }
-
-    // Equivalent Obj-C:
-    // [[config preferences] setValue:@YES forKey:@"fullScreenEnabled"];
-    ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "fullScreenEnabled"_str);
-
-    // Equivalent Obj-C:
-    // [[config preferences] setValue:@YES forKey:@"javaScriptCanAccessClipboard"];
-    ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "javaScriptCanAccessClipboard"_str);
-
-    // Equivalent Obj-C:
-    // [[config preferences] setValue:@YES forKey:@"DOMPasteAllowed"];
-    ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "DOMPasteAllowed"_str);
-
-    ((void (*)(id, SEL, CGRect, id))objc_msgSend)(
-        m_webview, "initWithFrame:configuration:"_sel, CGRectMake(0, 0, 0, 0),
-        config);
-                
+    auto config = ((id(*)(id, SEL))objc_msgSend)(m_webview, "configuration"_sel);
+    m_manager   = ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
+    
     ((void (*)(id, SEL, id, id))objc_msgSend)(
         m_manager, "addScriptMessageHandler:name:"_sel, delegate,
         "external"_str);

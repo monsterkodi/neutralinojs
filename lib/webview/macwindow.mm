@@ -9,6 +9,21 @@
 
 @implementation MacWebView
 
+-(id) initWithInspectorAllowed:(BOOL)inspectorAllowed
+{
+    WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
+    
+    if (inspectorAllowed) {
+      [[config preferences] setValue:@YES forKey:@"developerExtrasEnabled"];
+    }
+
+    [[config preferences] setValue:@YES forKey:@"fullScreenEnabled"];
+    [[config preferences] setValue:@YES forKey:@"javaScriptCanAccessClipboard"];
+    [[config preferences] setValue:@YES forKey:@"DOMPasteAllowed"];
+
+    return [self initWithFrame:CGRectMake(0, 0, 0, 0) configuration:config];
+}
+
 -(id) initWithFrame:(CGRect)frame configuration:(WKWebViewConfiguration*)configuration
 {
     self = [super initWithFrame:frame configuration:configuration];
@@ -63,8 +78,10 @@
 
 @implementation MacWindow
 
-- (id)initWithHiddenTitlebar:(BOOL)hideTitlebar hiddenButtons:(BOOL)hideButtons resizable:(BOOL)resizable
+- (id)initWithWebView:(MacWebView*)webView hiddenTitlebar:(BOOL)hideTitlebar hiddenButtons:(BOOL)hideButtons resizable:(BOOL)resizable
 {
+    m_webView = webView;    
+
     NSUInteger styleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskMiniaturizable;
     
     if (resizable)
@@ -112,9 +129,9 @@
         maxWidth:(int)maxWidth maxHeight:(int)maxHeight 
         resizable:(BOOL)resizable
 {
-    //[self setStyleMask:(resizable ? 
-    //    [self styleMask] |  NSWindowStyleMaskResizable : 
-    //    [self styleMask] & ~NSWindowStyleMaskResizable)];
+    [self setStyleMask:(resizable ? 
+        [self styleMask] |  NSWindowStyleMaskResizable : 
+        [self styleMask] & ~NSWindowStyleMaskResizable)];
 
     if (minWidth != -1 || minHeight != -1) {
         [self setContentMinSize:CGSizeMake(minWidth, minHeight)];
@@ -130,7 +147,7 @@
 
 -(void)takeSnapshot
 {
-    // [m_webview takeSnapshot];
+    [m_webView takeSnapshot];
 }
 
 -(void)snapshotTaken:(NSImage *)image

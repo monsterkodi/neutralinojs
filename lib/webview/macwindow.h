@@ -6,13 +6,16 @@
 {
 }
 
+- (id)initWithInspectorAllowed:(BOOL)inspectorAllowed;
+
 @end
 
 @interface MacWindow : NSWindow
 {
+    MacWebView *m_webView;
 }
 
-- (id)initWithHiddenTitlebar:(BOOL)hideTitlebar hiddenButtons:(BOOL)hideButtons resizable:(BOOL)resizable;
+- (id)initWithWebView:(MacWebView*)webView hiddenTitlebar:(BOOL)hideTitlebar hiddenButtons:(BOOL)hideButtons resizable:(BOOL)resizable;
 
 - (void)setWidth:(int)width height:(int)height 
         minWidth:(int)minWidth minHeight:(int)minHeight 
